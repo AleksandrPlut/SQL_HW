@@ -21,7 +21,7 @@ VALUES
 SELECT * FROM cars;
 
 # 1. Создайте представление, в которое попадут автомобили стоимостью до 25 000 долларов
-
+DROP VIEW cheap_cars;
 CREATE VIEW cheap_cars AS
 SELECT * FROM cars
 WHERE cost < 25000;
@@ -36,7 +36,7 @@ SELECT * FROM cars
 WHERE cost < 30000;
 
 # 3. Создайте представление, в котором будут только автомобили марки “Шкода” и “Ауди” (аналогично)
-
+DROP VIEW cars_S_A;
 CREATE VIEW cars_S_A AS
 SELECT * FROM cars
 WHERE name = "Skoda" OR name = "Audi";
@@ -67,6 +67,15 @@ WHERE `group` = 1;
 # если есть решение оптимальнее, буду рад увидеть в коментах к ДЗ, заранее спасибо.
 
 
+# РЕШЕНИЕ ОТ ПРЕПОДАВАТЕЛЯ
+SELECT name,
+SUM(cost) OVER() 
+FROM ( 
+SELECT name, cost 
+FROM cars 
+ORDER BY cost DESC 
+LIMIT 3) AS table_1;
+
 # 3* Получить список автомобилей, у которых цена больше предыдущей цены (т.е. у которых произошло повышение цены)
 
 SELECT id, name, cost
@@ -82,6 +91,14 @@ SELECT
 id, name, cost,
 LAG(cost) OVER () `previous`
 FROM cars;  # для проверки
+
+# РЕШЕНИЕ ОТ ПРЕПОДАВАТЕЛЯ
+SELECT name 
+FROM (
+SELECT name, cost, 
+LAG(cost) OVER() `lag`
+FROM cars) AS table_2 
+WHERE cost > `lag`;
 
 
 # 4* Получить список автомобилей, у которых цена меньше следующей цены (т.е. у которых произойдет снижение цены)
@@ -101,6 +118,15 @@ LEAD(cost) OVER () `next`
 FROM cars;  # для проверки
 
 
+# РЕШЕНИЕ ОТ ПРЕПОДАВАТЕЛЯ
+SELECT name 
+FROM (
+SELECT name, cost, 
+LEAD(cost) OVER() `lead` 
+FROM cars) AS table_2 
+WHERE cost < `lead`;
+
+
 # 5*Получить список автомобилей, отсортированный по возрастанию цены, 
 # и добавить столбец со значением разницы между текущей ценой и ценой следующего автомобиля
 
@@ -117,3 +143,11 @@ ORDER BY cost;
 # Выводит вроде правильно, но опять же не уверен в оптимальности написанного запроса
 
 # БУДУ ОЧЕНЬ БЛАГОДАРЕН, ЕСЛИ НАПИШИТЕ ОПТИМАЛЬНЫЕ РЕШЕНИЯ 3, 4 И 5 ЗАДАЧИ
+
+
+# РЕШЕНИЕ ОТ ПРЕПОДАВАТЕЛЯ
+SELECT name, cost, cost-`lead` "Разница с ценой предыдущего авто"
+FROM(
+SELECT name, cost, 
+LEAD(cost) OVER(ORDER BY cost) `lead`
+FROM cars) table_3;
